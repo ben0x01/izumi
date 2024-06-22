@@ -12,12 +12,15 @@ import {
     encodeFunctionData,
 } from 'viem';
 
-import {IZUMI_ROUTER_ABI, IZUMI_QUOTER_ABI} from './abi/izumi';
+import {IZUMI_ROUTER_ABI} from './abi/router';
+import {IZUMI_QUOTER_ABI} from './abi/quoter'
 import {IZUMI_CONTRACTS} from './constants';
-import {TOKENS_PER_CHAIN, SLIPPAGE} from '#mainnets/config.js';
-import {AutoClass} from '#auto-class/auto-class.js';
+import {TOKENS_PER_CHAIN} from './abi/tokens';
+import {IAutoClass} from './autoclass';
 import Decimal from 'decimal.js';
-import {sample} from 'lodash-es';
+//import {sample} from 'lodash-es';
+
+const SLIPPAGE = 2
 
 type Tokens = Partial<
     Record<
@@ -31,7 +34,7 @@ type Tokens = Partial<
 >;
 
 export class IzumiSwap {
-    mainAcc: AutoClass;
+    mainAcc: IAutoClass;
     address: Address;
     walletClient: WalletClient<Transport, Chain, Account>;
     slippage: bigint;
@@ -44,7 +47,7 @@ export class IzumiSwap {
     quoter: GetContractReturnType<typeof IZUMI_QUOTER_ABI, WalletClient, Address>;
     tokens: Tokens;
 
-    constructor(mainAcc: AutoClass, tokens: Tokens) {
+    constructor(mainAcc: IAutoClass, tokens: Tokens) {
         this.tokens = tokens;
         this.mainAcc = mainAcc;
 
