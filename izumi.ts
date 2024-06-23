@@ -18,9 +18,9 @@ import {IZUMI_CONTRACTS} from './constants';
 import {TOKENS_PER_CHAIN} from './abi/tokens';
 import {IAutoClass} from './autoclass';
 import Decimal from 'decimal.js';
-//import {sample} from 'lodash-es';
 
-const SLIPPAGE = 2
+
+const SLIPPAGE = BigInt(2);
 
 type Tokens = Partial<
     Record<
@@ -33,7 +33,9 @@ type Tokens = Partial<
     >
 >;
 
-export class IzumiSwap {
+type NetworkNames = keyof typeof IZUMI_CONTRACTS;
+type ChainNames = keyof typeof TOKENS_PER_CHAIN;
+export class Izumi {
     mainAcc: IAutoClass;
     address: Address;
     walletClient: WalletClient<Transport, Chain, Account>;
@@ -41,42 +43,45 @@ export class IzumiSwap {
     publicClient: PublicClient<Transport, Chain>;
     router: GetContractReturnType<
         typeof IZUMI_ROUTER_ABI,
-        WalletClient<Transport, Chain, Account>,
-        Address
+        WalletClient<Transport, Chain, Account>
     >;
-    quoter: GetContractReturnType<typeof IZUMI_QUOTER_ABI, WalletClient, Address>;
+    quoter: GetContractReturnType<typeof IZUMI_QUOTER_ABI, WalletClient>;
     tokens: Tokens;
 
-    constructor(mainAcc: IAutoClass, tokens: Tokens) {
+    constructor(
+        mainAcc: IAutoClass,
+        tokens: Tokens
+    ) {
         this.tokens = tokens;
-        this.mainAcc = mainAcc;
 
+        this.mainAcc = mainAcc;
         this.slippage = 1n;
         this.publicClient = mainAcc.publicClient;
 
         this.address = mainAcc.metamaskAddress;
         this.walletClient = mainAcc.walletClient;
 
-        const network = this.publicClient.chain.id as keyof typeof IZUMI_CONTRACTS;
+        const network: NetworkNames = this.publicClient.chain.name as NetworkNames;
+
+
         this.router = getContract({
-            address: IZUMI_CONTRACTS[network].router,
+            address: IZUMI_CONTRACTS[network].router as `0x${string}`,
             abi: IZUMI_ROUTER_ABI,
-            client: this.walletClient,
+            client: this.walletClient
         });
 
         this.quoter = getContract({
-            address: IZUMI_CONTRACTS[network].quoter,
+            address: IZUMI_CONTRACTS[network].quoter as `0x${string}`,
             abi: IZUMI_QUOTER_ABI,
             client: this.walletClient,
-        });
+        })
     }
 
-    async getPath(
+    getPath(
         fromTokenAddress: Address,
         toTokenAddress: Address,
         fromTokenName: keyof Tokens,
-        toTokenName: keyof Tokens
-    ): Promise<string | null> {
+        toTokenName: keyof Tokens): string | null {
         const poolFeeInfo = {
             'zkSync': {
                 "USDC/ETH": 2000,
@@ -110,7 +115,7 @@ export class IzumiSwap {
         const fromTokenHex = fromTokenAddress.slice(2).padStart(40, '0');
         const toTokenHex = toTokenAddress.slice(2).padStart(40, '0');
 
-        if (fromTokenName !== 'USDT' && toTokenName !== 'USDT') {
+        if (!['USDT'].includes(fromTokenName) && !['USDT'].includes(toTokenName)) {
             const feeKey = `${fromTokenName}/${toTokenName}` as keyof typeof poolFeeInfo;
             const fee = poolFeeInfo[feeKey];
             if (fee === undefined) {
@@ -120,7 +125,7 @@ export class IzumiSwap {
             const feeHex = fee.toString(16).padStart(6, '0');
             return `0x${fromTokenHex}${feeHex}${toTokenHex}`;
         } else {
-            const middleTokenHex = TOKENS_PER_CHAIN[this.publicClient.chain.name]['USDC'].slice(2).padStart(40, '0');
+            const middleTokenHex = TOKENS_PER_CHAIN[this.publicClient.chain.name as ChainNames]['USDC'];  //TOKENS_PER_CHAIN[this.publicClient.chain.name]['USDC'].slice(2).padStart(40, '0')
             const feeKey1 = `${fromTokenName}/USDC` as keyof typeof poolFeeInfo;
             const feeKey2 = `USDC/${toTokenName}` as keyof typeof poolFeeInfo;
             const fee1 = poolFeeInfo[feeKey1];
@@ -138,7 +143,8 @@ export class IzumiSwap {
     async getMinAmountOut(path: string, amountInWei: bigint): Promise<bigint> {
         const minAmountOutArray = await this.quoter.read.swapAmount([amountInWei, path]) as [bigint];
         const minAmountOut = minAmountOutArray[0];
-        return minAmountOut - (minAmountOut * SLIPPAGE) / 100n;
+        const slippageAmount = (minAmountOut * SLIPPAGE) / BigInt(100);
+        return minAmountOut - slippageAmount;
     }
 
     async swap(
@@ -204,7 +210,7 @@ export class IzumiSwap {
                 transactionData.push(unwrapData);
             }
 
-            const txParams = await this.mainAcc.prepareTransaction({
+            const txParams = await this.mainAcc.walletClient.prepareTransactionRequest({
                 value: tokenIn === 'ETH' ? amount : 0n,
             });
 
@@ -233,4 +239,4 @@ export class IzumiSwap {
     }
 }
 
-export default IzumiSwap;
+export default Izumi;
