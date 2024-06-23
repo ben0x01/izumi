@@ -210,7 +210,7 @@ export class Izumi {
                 transactionData.push(unwrapData);
             }
 
-            const txParams = await this.mainAcc.walletClient.prepareTransactionRequest({
+            const txParams = await this.mainAcc.walletClient.prepareTransactionRequest({   //переписать через simulate
                 value: tokenIn === 'ETH' ? amount : 0n,
             });
 
