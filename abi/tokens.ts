@@ -1,6 +1,6 @@
-interface TokenAddresses {
-    [key: string]: string | number;
-}
+import { Address } from 'viem'; // Ensure to import Address from your relevant module
+
+type TokenAddresses = Record<'ETH' | 'WETH' | 'USDC' | 'USDT' | 'WETH.e' | 'ARB' | 'DAI' | 'USDC.e' | 'MATIC' | 'WMATIC' | 'OP' | 'USDB' | 'BNB', Address>;
 
 type ChainNames =
     | 'Ethereum'
@@ -21,7 +21,7 @@ type ChainNames =
     | 'Manta'
     | 'Mode';
 
-const TOKENS_PER_CHAIN: Record<ChainNames, TokenAddresses> = {
+const TOKENS_PER_CHAIN: Record<ChainNames, Partial<TokenAddresses>> = {
     Ethereum: {
         ETH: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
         WETH: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
@@ -87,13 +87,12 @@ const TOKENS_PER_CHAIN: Record<ChainNames, TokenAddresses> = {
         WETH: '0x5AEa5775959fBC2557Cc8789bC1bf90A239D9a91',
         USDC: '0x3355df6D4c9C3035724Fd0e3914dE96A5a83aaf4',
         USDT: '0x493257fD37EDB34451f62EDf8D2a0C418852bA4C',
-        // BUSD: "0x2039bb4116B4EFc145Ec4f0e2eA75012D6C0f181"
     },
     Starknet: {
-        ETH: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7n',
-        USDC: '0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8n',
-        USDT: '0x068f5c6a61780768455de69077e07e89787839bf8166decfbf92b645209c0fb8n',
-        DAI: '0x00da114221cb83fa859dbdb4c44beeaa0bb37c7537ad5ae66fe5e0efd20e6eb3n',
+        ETH: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
+        USDC: '0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8',
+        USDT: '0x068f5c6a61780768455de69077e07e89787839bf8166decfbf92b645209c0fb8',
+        DAI: '0x00da114221cb83fa859dbdb4c44beeaa0bb37c7537ad5ae66fe5e0efd20e6eb3',
     },
     Base: {
         ETH: '0x4200000000000000000000000000000000000006',
@@ -104,31 +103,31 @@ const TOKENS_PER_CHAIN: Record<ChainNames, TokenAddresses> = {
     Linea: {
         ETH: '0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f',
         WETH: '0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f',
-        USDT: '0xA219439258ca9da29E9Cc4cE5596924745e12B93',
         USDC: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
+        USDT: '0xA219439258ca9da29E9Cc4cE5596924745e12B93',
     },
     Scroll: {
         ETH: '0x5300000000000000000000000000000000000004',
         WETH: '0x5300000000000000000000000000000000000004',
-        USDT: '0xf55BEC9cafDbE8730f096Aa55dad6D22d44099Df',
         USDC: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
+        USDT: '0xf55BEC9cafDbE8730f096Aa55dad6D22d44099Df',
     },
     'BNB Chain': {
         BNB: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
-        USDT: '0x55d398326f99059fF775485246999027B3197955',
         USDC: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
+        USDT: '0x55d398326f99059fF775485246999027B3197955',
     },
     Manta: {
         ETH: '0x0Dc808adcE2099A9F62AA87D9670745AbA741746',
         WETH: '0x0Dc808adcE2099A9F62AA87D9670745AbA741746',
-        USDT: '0xf417F5A458eC102B90352F697D6e2Ac3A3d2851f',
         USDC: '0xb73603C5d87fA094B7314C74ACE2e64D165016fb',
+        USDT: '0xf417F5A458eC102B90352F697D6e2Ac3A3d2851f',
     },
     Mode: {
         ETH: '0x4200000000000000000000000000000000000006',
         WETH: '0x4200000000000000000000000000000000000006',
-        USDT: '0xf0F161fDA2712DB8b566946122a5af183995e2eD',
         USDC: '0xd988097fb8612cc24eeC14542bC03424c656005f',
+        USDT: '0xf0F161fDA2712DB8b566946122a5af183995e2eD',
     },
 };
 
